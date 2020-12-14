@@ -12,36 +12,6 @@ module "vpc" {
   tags               = "${var.tags}"
 }
 
-module "autoscaling_group" {
-  source                  = "./modules/autoscaling_group/"
-
-  private_subnets         = module.vpc.private_subnet_ids
-  public_subnets          = module.vpc.public_subnet_ids
-  workers_security_groups = module.security_group.sg_id
-  platform_name           = var.platform_name
-  availability_zones_name = var.availability_zone_names
-  efs_dns                 = module.efs.dns_name
-  instance_profile_name   = "MoodleInstanceProfileRole"
-  worker_groups_launch_template = [
-    {
-      name                    = "${var.platform_name}-worker"
-      override_instance_types = var.instance_types
-      spot_instance_pools     = 0
-      asg_min_size            = 1
-      asg_max_size            = var.max_nodes_count
-      asg_desired_capacity    = var.desired_nodes_count
-      on_demand_base_capacity = var.demand_nodes_count
-      suspended_processes     = ["AZRebalance", "ReplaceUnhealthy", "Terminate"]
-      public_ip               = false
-      root_volume_size          = 50
-      enable_monitoring         = false
-      key_name                  = var.key_name
-      ami_id                    = var.ami_id
-    }
-  ]
-  tags = "${var.tags}"
-}
-
 module "application_load_balancer" {
   source          = "./modules/application_load_balancer/"
 
@@ -51,23 +21,6 @@ module "application_load_balancer" {
   sg_id           = [module.security_group.sg_id]
   vpc_id          = module.vpc.vpc_id
 
-}
-
-module "security_group" {
-  source        = "./modules/security_group/"
-
-  efs_port      = "2049"
-  platform_name = var.platform_name
-  vpc_id = module.vpc.vpc_id
-}
-
-module "efs" {
-  source          = "./modules/efs/"
-
-  creation_token  = "${var.platform_name}-efs"
-  perfomance_mode = "generalPurpose"
-  security_groups = "${module.security_group.sg_id}"
-  subnet_ids      = "${module.vpc.private_subnet_ids}"
 }
 
 module "rds" {
@@ -94,7 +47,61 @@ module "redis_cache" {
   cache_node_count = 1
   node_type = "cache.t2.micro"
   private_subnets = module.vpc.private_subnet_ids
+  vpc_id = module.vpc.vpc_id
 }
+
+module "autoscaling_group" {
+  source                  = "./modules/autoscaling_group/"
+  database_name           = module.rds.database_name
+  rds_endpoint            = module.rds.rds_endoint
+  cache_endpoint          = module.redis_cache.endpoint
+  domain_name             = var.full_moodle_domain
+  private_subnets         = module.vpc.private_subnet_ids
+  public_subnets          = module.vpc.public_subnet_ids
+  workers_security_groups = module.security_group.sg_id
+  platform_name           = var.platform_name
+  availability_zones_name = var.availability_zone_names
+  efs_dns                 = module.efs.dns_name
+  instance_profile_name   = "MoodleInstanceProfileRole"
+  target_group_arns       = module.application_load_balancer.target_group_arn
+  worker_groups_launch_template = [
+    {
+      name                    = "${var.platform_name}-worker"
+      override_instance_types = var.instance_types
+      spot_instance_pools     = 0
+      asg_min_size            = 1
+      asg_max_size            = var.max_nodes_count
+      asg_desired_capacity    = var.desired_nodes_count
+      on_demand_base_capacity = var.demand_nodes_count
+      suspended_processes     = ["AZRebalance", "ReplaceUnhealthy", "Terminate"]
+      public_ip               = false
+      root_volume_size          = 50
+      enable_monitoring         = false
+      key_name                  = var.key_name
+      ami_id                    = var.ami_id
+      instance_type = var.instance_types[0]
+    }
+  ]
+  tags = "${var.tags}"
+}
+
+module "security_group" {
+  source        = "./modules/security_group/"
+
+  efs_port      = "2049"
+  platform_name = var.platform_name
+  vpc_id = module.vpc.vpc_id
+}
+
+module "efs" {
+  source          = "./modules/efs/"
+
+  creation_token  = "${var.platform_name}-efs"
+  perfomance_mode = "generalPurpose"
+  security_groups = "${module.security_group.sg_id}"
+  subnet_ids      = "${module.vpc.private_subnet_ids}"
+}
+
 
 module "bastion" {
   source = "./modules/bastion/"
@@ -104,4 +111,12 @@ module "bastion" {
   key_name           = var.key_name
   platform_name      = var.platform_name
   public_subnet_id   = module.vpc.public_subnet_ids[0]
+}
+
+resource "aws_route53_record" "alb_record" {
+  name = var.moodle_subdomain
+  type = "CNAME"
+  zone_id = var.hosted_zone_id
+  ttl     = "300"
+  records = [module.application_load_balancer.dns]
 }

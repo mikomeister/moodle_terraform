@@ -13,7 +13,7 @@ resource "aws_autoscaling_group" "main_asg" {
   "asg_min_size",
   local.workers_group_defaults["asg_min_size"],
   )
-
+  target_group_arns = [var.target_group_arns]
   desired_capacity = lookup(
   var.worker_groups_launch_template[count.index],
   "asg_desired_capacity",

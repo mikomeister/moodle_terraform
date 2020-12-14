@@ -20,7 +20,7 @@ variable "cidr_blocks" {
   type = "map"
 
   default = {
-    "sg_subnet" = "10.72.7.0/24"
+    "sg_subnet" = "10.0.0.0/8"
     "all_ip"      = "0.0.0.0/0"
   }
 }

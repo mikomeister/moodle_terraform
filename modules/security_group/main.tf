@@ -25,6 +25,15 @@ resource "aws_security_group_rule" "allow_ssh_ingress" {
   security_group_id = "${aws_security_group.sg.id}"
   cidr_blocks       = ["${var.cidr_blocks["sg_subnet"]}"]
 }
+resource "aws_security_group_rule" "allow_home_cidr" {
+  type      = "ingress"
+  from_port = 443
+  to_port   = 443
+  protocol  = "tcp"
+
+  security_group_id = "${aws_security_group.sg.id}"
+  cidr_blocks       = ["${var.cidr_blocks["home_cidr"]}"]
+}
 
 resource "aws_security_group_rule" "allow_all_egress" {
   type = "egress"

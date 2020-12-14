@@ -12,6 +12,7 @@ variable "cidr_blocks" {
 
   default = {
     "sg_subnet" = "10.72.0.0/16"
-    "all_ip"      = "0.0.0.0/0"
+    "all_ip"    = "0.0.0.0/0"
+    "home_cidr" = "85.223.209.0/24"
   }
 }

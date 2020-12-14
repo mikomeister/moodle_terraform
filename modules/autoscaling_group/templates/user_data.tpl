@@ -7,6 +7,12 @@ yum install git -y
 
 git clone https://github.com/mikomeister/ansible_moodle.git /home/ec2-user/ansible
 
+echo "database_endpoint_address: \"${rds_endpoint}\"" >> /home/ec2-user/ansible/ansible-playbooks/group_vars/all
+echo "elastic_cache_endpoint_address: \"${cache_endpoint}\"" >> /home/ec2-user/ansible/ansible-playbooks/group_vars/all
+echo "domain_name: \"${domain_name}\"" >> /home/ec2-user/ansible/ansible-playbooks/group_vars/all
+echo "database_name: \"${database_name}\"" >> /home/ec2-user/ansible/ansible-playbooks/group_vars/all
+
+
 #Create directory structure
 mkdir -p /var/www/moodle/html
 mkdir -p /var/www/moodle/data
@@ -34,4 +40,4 @@ amazon-linux-extras install ansible2 -y
 #configure ansible hosts file to localhost
 echo "localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python ansible_user=ec2-user ansible_become=true" >> /etc/ansible/hosts
 
-
+ansible-playbook /home/ec2-user/ansible/ansible-playbooks/install.yml

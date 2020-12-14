@@ -19,8 +19,10 @@ private_cidrs      = ["10.72.0.0/22", "10.72.4.0/22", "10.72.8.0/22"]
 availability_zone_names = ["eu-central-1a", "eu-central-1b", "eu-central-1c"]
 public_subnets_id = []
 public_cidrs      = ["10.72.12.0/22", "10.72.16.0/22", "10.72.20.0/22"]
-
-instance_types = ["t2.micro"]
+hosted_zone_id = "Z09748211SFPPXO2A2K4"
+moodle_subdomain = "moodle"
+instance_types = ["t3.medium"]
+full_moodle_domain = "moodle.rudenko.link"
 
 tags = {
   "Owner" = "Oleksandr_Rudenko"

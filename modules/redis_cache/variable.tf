@@ -10,3 +10,13 @@ variable "cache_node_count" {
 
 variable "private_subnets" {}
 
+variable "cidr_blocks" {
+  type = "map"
+
+  default = {
+    "sg_subnet" = "10.0.0.0/8"
+    "all_ip"      = "0.0.0.0/0"
+  }
+}
+
+variable "vpc_id" {}

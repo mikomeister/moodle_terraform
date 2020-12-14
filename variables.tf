@@ -113,3 +113,14 @@ variable "db_password" {
   description = "The password for the DB master user"
   type        = string
 }
+
+variable "hosted_zone_id" {
+  description = "Hosted zone id to create records there"
+  type = string
+}
+
+variable "moodle_subdomain" {
+  description = "name of the DNS subdomain "
+}
+
+variable "full_moodle_domain" {}

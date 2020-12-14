@@ -47,3 +47,8 @@ variable "availability_zones_name" {
 }
 variable "efs_dns" {}
 variable "instance_profile_name" {}
+variable "target_group_arns" {}
+variable "rds_endpoint" {}
+variable "cache_endpoint" {}
+variable "domain_name" {}
+variable "database_name" {}
