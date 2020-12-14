@@ -10,7 +10,7 @@ resource "aws_db_instance" "moodle" {
   password = var.db_password
   port     = var.port
   publicly_accessible = true
-  vpc_security_group_ids = [var.sg_id]
+  vpc_security_group_ids = [var.sg_id, aws_security_group.sg.id]
   db_subnet_group_name = aws_db_subnet_group.subnet_group.name
   deletion_protection = false
   maintenance_window = "fri:18:03-fri:18:33"
@@ -43,7 +43,7 @@ resource "aws_security_group_rule" "allow_http_ingress" {
   protocol  = "tcp"
 
   security_group_id = "${aws_security_group.sg.id}"
-  cidr_blocks       = ["${var.cidr_blocks["sg_subnet"]}"]
+  cidr_blocks       = ["${var.cidr_blocks["sg_subnet"]}"] ////////0.0.0.0/0
 }
 
 resource "aws_db_subnet_group" "subnet_group" {
